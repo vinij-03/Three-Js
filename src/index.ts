@@ -1,21 +1,25 @@
 import { Controller } from "./controls";
+import THREE from "three";
 import { Scene, Color, PerspectiveCamera, WebGLRenderer, AnimationMixer } from "three";
-import { DirectionalLight, AmbientLight, Clock } from "three";
+import { DirectionalLight, AmbientLight, Clock, AxesHelper } from "three";
 import { OrbitControls } from "@three-ts/orbit-controls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import "./styles.css";
+// import * as CANNON from "cannon-es";
 
 const scene = new Scene();
 scene.background = new Color(0xa8def0);
+const axesHelper = new AxesHelper(100);
+scene.add(axesHelper);
 
 const camera = new PerspectiveCamera(
-  45,
+  75,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
 
-camera.position.set(15,10, 5);
+camera.position.set(10,15, 10);
 
 const renderer = new WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -23,7 +27,7 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.shadowMap.enabled = true;
 
 const orbit = new OrbitControls(camera, renderer.domElement);
-orbit.minDistance = 5;
+orbit.minDistance =10;
 orbit.enableDamping = true;
 orbit.maxDistance = 30 ;
 orbit.enablePan = false;
@@ -31,6 +35,23 @@ orbit.maxPolarAngle = Math.PI / 2 - 0.05;
 orbit.update();
 
 light();
+
+// //physics
+// const world = new CANNON.World();
+// world.broadphase = new CANNON.SAPBroadphase(world);
+// world.allowSleep = true;
+// world.gravity.set(0, -9.82, 0);
+
+// const defaultMaterial = new CANNON.Material("default");
+// const defaultContactMaterial = new CANNON.ContactMaterial(
+//   defaultMaterial,
+//   defaultMaterial,
+//   {
+//     friction: 0.1,
+//     restitution: 0.5,
+//   }
+// );
+// world.defaultContactMaterial = defaultContactMaterial;
 
 var characterControls: Controller;
 new GLTFLoader().load(
@@ -41,24 +62,6 @@ new GLTFLoader().load(
       if (object.isMesh) object.castShadow = true;
     });
     scene.add(model);
-
-    const gltfAnimations: THREE.AnimationClip[] = gltf.animations;
-    const mixer = new AnimationMixer(model);
-    const animationsMap: Map<string, THREE.AnimationAction> = new Map();
-    gltfAnimations
-      .filter((a) => a.name != "TPose")
-      .forEach((a: THREE.AnimationClip) => {
-        animationsMap.set(a.name, mixer.clipAction(a));
-      });
-
-    characterControls = new Controller(
-      model,
-      mixer,
-      animationsMap,
-      orbit as any,
-      camera,
-      "Idle"
-    );
   }
 );
 new GLTFLoader().load(
@@ -88,8 +91,10 @@ new GLTFLoader().load(
       camera,
       "Idle"
     );
+    model.position.set(0,-1,0)
   }
 );
+
 
 const keysPressed = {};
 document.addEventListener(
