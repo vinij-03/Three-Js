@@ -91,7 +91,7 @@ new GLTFLoader().load(
       camera,
       "Idle"
     );
-    model.position.set(0,-1,0)
+    
   }
 );
 
